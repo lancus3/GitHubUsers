@@ -1,30 +1,68 @@
+class App extends React.Component {
+    constructor() {
+        super();
+        this.state = {
+            searchText: '',
+            users: []
+        };
+    }
 
+    onChangeHandle(event) {
+        this.setState({ searchText: event.target.value });
+    }
 
+    onSubmit(event) {
+        event.preventDefault();
+        const { searchText } = this.state;
+        const url = `https://api.github.com/search/users?q=${searchText}`;
+        fetch(url)
+            .then(response => response.json())
+            .then(responseJson => this.setState({ users: responseJson.items }));
+    }
 
-const h = "hello";
-const w = "world";
-
-console.log(`${h} ${w}`)
-
-
-
-const multiply = (a,b=1) => a*b;
-console.log(multiply(43,5));
-
-
-const average = (...args) => {
-    let suma = 0;
-    args.forEach(arg => suma=arg + suma);
-    return suma/args.length;
+    render() {
+        return (
+            <div>
+                <form onSubmit={event => this.onSubmit(event)}>
+                    <label htmlFor="searchText">Search by user name</label>
+                    <input
+                        type="text"
+                        id="searchText"
+                        onChange={event => this.onChangeHandle(event)}
+                        value={this.state.searchText} />
+                </form>
+                <UsersList users={this.state.users} />
+            </div>
+        );
+    }
 }
-console.log(average(5,1,5,6));
 
+class UsersList extends React.Component {
+    get users() {
+        return this.props.users.map(user => <User key={user.id} user={user} />);
+    }
 
-const grades = [1, 5, 5, 5, 4, 3, 3, 2, 1]
-console.log(average(...grades))
+    render() {
+        return (
+            <div>
+                {this.users}
+            </div>
+        );
+    }
+}
 
+class User extends React.Component {
+    render() {
+        return (
+            <div>
+                <img src={this.props.user.avatar_url} style={{ maxWidth: '100px' }} />
+                <a href={this.props.user.html_url} target="_blank">{this.props.user.login}</a>
+            </div>
+        );
+    }
+}
 
-
-const names = [1, 4, 'Iwona', false, 'Nowak'];
-const [, ,third,,fifth] = names; 
-console.log(third +" " + fifth);
+ReactDOM.render(
+    <App />,
+    document.getElementById('root')
+);
